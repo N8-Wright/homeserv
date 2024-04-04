@@ -1,0 +1,76 @@
+﻿---
+services:
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: jellyfin
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - /home/njw/jellyfin-cache:/config
+      - /mnt/dataPool/enc/videos/Shows:/data/tvshows
+      - /mnt/dataPool/enc/videos/Movies:/data/movies
+    ports:
+      - 8096:8096
+    restart: unless-stopped
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    ports:
+      - "192.168.0.132:53:53/tcp"
+      - "192.168.0.132:53:53/udp"
+      - "192.168.0.132:80:80/tcp"
+    environment:
+      TZ: 'America/LosAngeles'
+    volumes:
+      - './etc-pihole:/etc/pihole'
+      - './etc-dnsmasq.d:/etc/dnsmasq.d'
+    restart: unless-stopped
+  minecraft:
+    image: marctv/minecraft-papermc-server:latest
+    restart: always
+    container_name: "mcserver"
+    environment:
+      MEMORYSIZE: "4G"
+      PAPERMC_FLAGS: ""
+    volumes:
+      - /mnt/dataPool/enc/gameserv/minecraft/c:/data
+    ports:
+      - "25565:25565"
+    # The following allow `docker attach minecraft` to work
+    stdin_open: true
+    tty: true
+  omada:
+    image: mbentley/omada-controller
+    restart: unless-stopped
+    ports:
+      - 8088:8088
+      - 8043:8043
+      - 8843:8843
+      - 27001:27001/udp
+      - 29810:29810/udp
+      - 29811-29816:29811-29816
+    environment:
+      MANAGE_HTTP_PORT: 8088
+      MANAGE_HTTPS_PORTL: 8043
+      PGID: "508"
+      PORTAL_HTTP_PORT: 8088
+      PORTAL_HTTPS_PORT: 8843
+      PORT_ADOPT_V1: 29812
+      PORT_APP_DISCOVERY: 27001
+      PORT_DISCOVERY: 29810
+      PORT_MANAGER_V1: 29811
+      PORT_MANAGER_V2: 29814
+      PORT_TRANSFER_V2: 29815
+      PORT_RTTY: 29816
+      PORT_UPGRADE_V1: 29813
+      PUID: "508"
+      SHOW_SERVER_LOGS: "true"
+      SHOW_MONGODB_LOGS: "false"
+      SSL_CERT_NAME: "tls.crt"
+      SSL_KEY_NAME: "tls.key"
+      TZ: Pst/UTC
+    volumes:
+      - /mnt/dataPool/enc/homeserv/Omada:/opt/tplink/EAPController/data
+      - /mnt/dataPool/enc/homeserv/Omada:/opt/tplink/EAPController/logs
